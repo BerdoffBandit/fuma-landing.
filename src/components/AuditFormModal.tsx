@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -17,35 +17,69 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
     country: '',
     businessType: '',
     email: '',
-    customerType: ''
+    customerType: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitted(true);
-    
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      onClose();
-      setFormData({
-        name: '',
-        businessName: '',
-        website: '',
-        city: '',
-        country: '',
-        businessType: '',
-        email: '',
-        customerType: ''
-      });
-    }, 3000);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const formElement = e.currentTarget;
+      const data = new FormData(formElement);
+
+      // extra metadata for FormSubmit
+      data.append('_subject', 'New AI Visibility Audit Request from FUMA');
+      data.append('_captcha', 'false');
+      data.append('_template', 'table');
+      data.append(
+        '_autoresponse',
+        'Thanks for requesting your AI Visibility Audit. We will get back to you shortly. – FUMA'
+      );
+
+      const response = await fetch('https://formsubmit.co/fuma.discovery@gmail.com', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
+        body: data,
+      });
+
+      if (!response.ok) {
+        throw new Error('FormSubmit request failed');
+      }
+
+      // success UI
+      setIsSubmitted(true);
+
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+        onClose();
+        setFormData({
+          name: '',
+          businessName: '',
+          website: '',
+          city: '',
+          country: '',
+          businessType: '',
+          email: '',
+          customerType: '',
+        });
+        formElement.reset();
+      }, 3000);
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      alert('Something went wrong submitting your request. Please try again.');
+    }
   };
 
   return (
@@ -100,7 +134,9 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
                 <>
                   {/* Header */}
                   <div className="relative mb-8">
-                    <h3 className="text-3xl text-black/90 mb-2">Request Your AI Visibility Audit</h3>
+                    <h3 className="text-3xl text-black/90 mb-2">
+                      Request Your AI Visibility Audit
+                    </h3>
                     <p className="text-black/50">Help us understand your business better.</p>
                   </div>
 
@@ -236,7 +272,8 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
                     {/* Customer Type (Optional) */}
                     <div>
                       <label htmlFor="customerType" className="block text-sm text-black/60 mb-2">
-                        What kind of customers do you want AI to send you? <span className="text-black/30">(Optional)</span>
+                        What kind of customers do you want AI to send you?{' '}
+                        <span className="text-black/30">(Optional)</span>
                       </label>
                       <textarea
                         id="customerType"
