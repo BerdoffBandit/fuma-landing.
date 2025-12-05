@@ -346,7 +346,7 @@ export default function App() {
           <div className="grid md:grid-cols-3 gap-8">
             <PricingCard
               name="Starter"
-              price="£149"
+              price="$199"
               features={[
                 "AI Visibility Score",
                 "Basic audit report",
@@ -357,7 +357,7 @@ export default function App() {
             />
             <PricingCard
               name="Pro"
-              price="£299"
+              price="$399"
               features={[
                 "Everything in Starter",
                 "Detailed optimization blueprint",
@@ -369,7 +369,7 @@ export default function App() {
             />
             <PricingCard
               name="Premium"
-              price="£499"
+              price="$699"
               features={[
                 "Everything in Pro",
                 "Full implementation support",

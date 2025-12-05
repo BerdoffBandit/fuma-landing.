@@ -1,6 +1,7 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 interface AuditFormModalProps {
   isOpen: boolean;
@@ -29,6 +30,60 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
       [e.target.name]: e.target.value,
     });
   };
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setIsSending(true);
+
+  try {
+    const SERVICE_ID = 'service_2mnxjx8';
+    const TEMPLATE_ID = 'template_yunwcku';
+    const PUBLIC_KEY = '5XNgcGBwzCU9jfTVM';
+
+    const response = await emailjs.send(
+      SERVICE_ID,
+      TEMPLATE_ID,
+      {
+        name: formData.name,
+        businessName: formData.businessName,
+        website: formData.website,
+        city: formData.city,
+        country: formData.country,
+        businessType: formData.businessType,
+        email: formData.email,
+        customerType: formData.customerType,
+      },
+      PUBLIC_KEY
+    );
+
+    console.log('EmailJS success:', response.status, response.text);
+
+    setIsSending(false);
+    setIsSubmitted(true);
+
+    // Reset the form data
+    setFormData({
+      name: '',
+      businessName: '',
+      website: '',
+      city: '',
+      country: '',
+      businessType: '',
+      email: '',
+      customerType: '',
+    });
+
+    // Auto-close after 10s like before
+    setTimeout(() => {
+      setIsSubmitted(false);
+      onClose();
+    }, 10000);
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    setIsSending(false);
+    alert('Something went wrong sending your request. Please try again.');
+  }
+};
+
 
   return (
     <AnimatePresence>
@@ -90,24 +145,10 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
 
                   {/* Form */}
                   <form
-                    action="https://formsubmit.co/214f042d89ae0585eb303754eb2b9980"
-                    method="POST"
-                    className="space-y-5"
-                    onSubmit={() => setIsSending(true)}
+                     onSubmit={handleSubmit} className="space-y-5"
+
                   >
-                    <input
-                      type="hidden"
-                      name="_subject"
-                      value="New AI Visibility Audit Request from FUMA"
-                    />
-                    <input type="hidden" name="_captcha" value="false" />
-                    <input type="hidden" name="_template" value="table" />
-                    <input
-                      type="hidden"
-                      name="_autoresponse"
-                      value="Thanks for requesting your AI Visibility Audit. We\u2019ll get back to you shortly. \u2013 FUMA"
-                    />
-                    {/* <input type="hidden" name="_next" value="https://fuma-landing-eight.vercel.app/thank-you" /> */}
+                    
                     {/* Name */}
                     <div>
                       <label htmlFor="name" className="block text-sm text-black/60 mb-2">
@@ -260,7 +301,7 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
                       disabled={isSending}
                       className="w-full py-4 rounded-lg border border-[#43BFF1]/30 bg-[#43BFF1]/10 text-black/90 hover:border-[#43BFF1] hover:bg-[#43BFF1]/20 transition-all duration-300 mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {isSending ? 'Sending\u2026' : 'Request My Audit'}
+                      {isSending ? 'Sending...' : 'Request My Audit'}
                     </motion.button>
                   </form>
                 </>
