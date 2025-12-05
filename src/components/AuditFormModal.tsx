@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface AuditFormModalProps {
 
 export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     businessName: '',
@@ -27,59 +28,6 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      const formElement = e.currentTarget;
-      const data = new FormData(formElement);
-
-      // extra metadata for FormSubmit
-      data.append('_subject', 'New AI Visibility Audit Request from FUMA');
-      data.append('_captcha', 'false');
-      data.append('_template', 'table');
-      data.append(
-        '_autoresponse',
-        'Thanks for requesting your AI Visibility Audit. We will get back to you shortly. – FUMA'
-      );
-
-      const response = await fetch('https://formsubmit.co/214f042d89ae0585eb303754eb2b9980', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-        },
-        body: data,
-      });
-
-      if (!response.ok) {
-        throw new Error('FormSubmit request failed');
-      }
-
-      // success UI
-      setIsSubmitted(true);
-
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-        onClose();
-        setFormData({
-          name: '',
-          businessName: '',
-          website: '',
-          city: '',
-          country: '',
-          businessType: '',
-          email: '',
-          customerType: '',
-        });
-        formElement.reset();
-      }, 3000);
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      alert('Something went wrong submitting your request. Please try again.');
-    }
   };
 
   return (
@@ -141,7 +89,25 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
                   </div>
 
                   {/* Form */}
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form
+                    action="https://formsubmit.co/214f042d89ae0585eb303754eb2b9980"
+                    method="POST"
+                    className="space-y-5"
+                    onSubmit={() => setIsSending(true)}
+                  >
+                    <input
+                      type="hidden"
+                      name="_subject"
+                      value="New AI Visibility Audit Request from FUMA"
+                    />
+                    <input type="hidden" name="_captcha" value="false" />
+                    <input type="hidden" name="_template" value="table" />
+                    <input
+                      type="hidden"
+                      name="_autoresponse"
+                      value="Thanks for requesting your AI Visibility Audit. We\u2019ll get back to you shortly. \u2013 FUMA"
+                    />
+                    {/* <input type="hidden" name="_next" value="https://fuma-landing-eight.vercel.app/thank-you" /> */}
                     {/* Name */}
                     <div>
                       <label htmlFor="name" className="block text-sm text-black/60 mb-2">
@@ -289,11 +255,12 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
                     {/* Submit Button */}
                     <motion.button
                       type="submit"
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full py-4 rounded-lg border border-[#43BFF1]/30 bg-[#43BFF1]/10 text-black/90 hover:border-[#43BFF1] hover:bg-[#43BFF1]/20 transition-all duration-300 mt-6"
+                      whileHover={{ scale: isSending ? 1 : 1.01 }}
+                      whileTap={{ scale: isSending ? 1 : 0.99 }}
+                      disabled={isSending}
+                      className="w-full py-4 rounded-lg border border-[#43BFF1]/30 bg-[#43BFF1]/10 text-black/90 hover:border-[#43BFF1] hover:bg-[#43BFF1]/20 transition-all duration-300 mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Request My Audit
+                      {isSending ? 'Sending\u2026' : 'Request My Audit'}
                     </motion.button>
                   </form>
                 </>
