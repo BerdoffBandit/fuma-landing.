@@ -45,7 +45,7 @@ export function AuditFormModal({ isOpen, onClose }: AuditFormModalProps) {
         'Thanks for requesting your AI Visibility Audit. We will get back to you shortly. – FUMA'
       );
 
-      const response = await fetch('https://formsubmit.co/fuma.discovery@gmail.com', {
+      const response = await fetch('https://formsubmit.co/214f042d89ae0585eb303754eb2b9980', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
